@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="780" height="210" viewBox="0 0 780 210" role="img" aria-labelledby="title">
+  <title id="title">NVRO Navarro Auto Trading</title>
+  <!-- Editable vector approximation of the supplied logo. Replace with the original artwork when available as a project asset. -->
+  <path d="M139 30h489q25 0 33 17H163Z" fill="#ed1735"/>
+  <g transform="translate(24 0) skewX(-15)">
+    <text x="41" y="144" fill="#ed1735" font-family="Arial Black,Arial,sans-serif" font-size="132" font-weight="900" letter-spacing="-13">N</text>
+    <text x="145" y="144" fill="#25354d" font-family="Arial Black,Arial,sans-serif" font-size="132" font-weight="900" letter-spacing="-10">VRO</text>
+    <g fill="#ed1735"><path d="M627 58h39l-13 23h-39zM681 58h27l-13 23h-27zM653 81h28l-13 24h-28zM707 81h28l-13 24h-28zM614 105h39l-16 28h-39zM668 105h27l-16 28h-27z"/></g>
+  </g>
+  <path d="M14 174h98l-6 5H8zM664 174h107l-6 5H658z" fill="#ed1735"/>
+  <text x="389" y="185" fill="#f4f5f7" text-anchor="middle" font-family="Arial,sans-serif" font-size="23" font-style="italic" font-weight="900" letter-spacing="5">NAVARRO AUTO TRADING</text>
+</svg>

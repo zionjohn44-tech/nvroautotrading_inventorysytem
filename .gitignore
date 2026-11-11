@@ -1,0 +1,22 @@
+# Environment & Local Configuration
+.env
+.env.*
+config/local.php
+
+# Logs and runtime storage
+*.log
+storage/*.log
+storage/*.json
+
+# User uploaded media (preserve directory & security configuration)
+uploads/vehicles/*
+!uploads/vehicles/.htaccess
+!uploads/vehicles/.gitkeep
+
+# Operating system & IDE files
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace

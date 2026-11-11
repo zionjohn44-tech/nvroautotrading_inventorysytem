@@ -1,0 +1,12 @@
+<?php
+declare(strict_types=1);
+
+// Optional local database override.
+// Copy this file to 'config/local.php' to customize settings without tracking in Git.
+return [
+    'host' => '127.0.0.1',
+    'port' => '3306',
+    'name' => 'nvroinventory_db',
+    'username' => 'root',
+    'password' => '',
+];
