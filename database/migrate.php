@@ -16,17 +16,9 @@ $server->exec('CREATE DATABASE IF NOT EXISTS `' . $config['name'] . '` CHARACTER
 $db = Database::connection();
 $db->exec(file_get_contents(__DIR__ . '/schema.sql'));
 $columns = [
-    'vehicle' => [
-        'Image_Path_2' => 'VARCHAR(255) DEFAULT NULL',
-        'Image_Path_3' => 'VARCHAR(255) DEFAULT NULL',
-    ],
     'user' => [
         'Session_Version' => 'INT NOT NULL DEFAULT 1',
         'Must_Change_Password' => 'TINYINT(1) NOT NULL DEFAULT 0',
-    ],
-    'test_drive' => [
-        'Duration_Minutes' => 'SMALLINT UNSIGNED NOT NULL DEFAULT 30',
-        'Created_At' => 'DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP',
     ],
 ];
 foreach ($columns as $table => $definitions) {
@@ -35,6 +27,18 @@ foreach ($columns as $table => $definitions) {
         if (!in_array($column, $existing, true)) {
             $db->exec("ALTER TABLE `$table` ADD COLUMN `$column` $definition");
         }
+    }
+}
+$vehicleColumns = $db->query("SHOW COLUMNS FROM vehicle")->fetchAll(PDO::FETCH_COLUMN);
+foreach (['Image_Path_2', 'Image_Path_3'] as $obsoletePhotoColumn) {
+    if (in_array($obsoletePhotoColumn, $vehicleColumns, true)) {
+        $db->exec("ALTER TABLE vehicle DROP COLUMN `$obsoletePhotoColumn`");
+    }
+}
+$testDriveColumns = $db->query("SHOW COLUMNS FROM test_drive")->fetchAll(PDO::FETCH_COLUMN);
+foreach (['Duration_Minutes', 'Created_At'] as $obsoleteTestDriveColumn) {
+    if (in_array($obsoleteTestDriveColumn, $testDriveColumns, true)) {
+        $db->exec("ALTER TABLE test_drive DROP COLUMN `$obsoleteTestDriveColumn`");
     }
 }
 $db->exec('CREATE TABLE IF NOT EXISTS auth_attempts (Attempt_Key CHAR(64) PRIMARY KEY, Failures INT NOT NULL DEFAULT 0, Window_Start DATETIME NOT NULL) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4');

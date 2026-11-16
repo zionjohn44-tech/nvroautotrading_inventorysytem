@@ -14,7 +14,7 @@ final class DashboardController extends Controller
         $db = Database::connection();
         $stats = [
             'available' => (int) $db->query("SELECT COUNT(*) FROM vehicle WHERE Availability_Status='Available'")->fetchColumn(),
-            'sold' => (int) $db->query("SELECT COUNT(*) FROM vehicle WHERE Availability_Status='Sold'")->fetchColumn(),
+            'sold' => (int) $db->query('SELECT COUNT(*) FROM sold_vehicle')->fetchColumn(),
             'inquiries' => (int) $db->query("SELECT COUNT(*) FROM inquiry WHERE Inquiry_Status IN ('Pending','In Progress')")->fetchColumn(),
             'drives' => (int) $db->query("SELECT COUNT(*) FROM test_drive WHERE Request_Status='Pending'")->fetchColumn(),
             'total' => (int) $db->query('SELECT COUNT(*) FROM vehicle')->fetchColumn(),

@@ -68,7 +68,7 @@ final class RecordsController extends Controller
     public function driveEdit(bool $new = false): void
     {
         $id = $new ? null : $this->id();
-        $data = $new ? ['Duration_Minutes' => 30, 'Vehicle_ID' => $_GET['vehicle'] ?? ''] : $this->record(new TestDriveRepository(), $id);
+        $data = $new ? ['Vehicle_ID' => $_GET['vehicle'] ?? ''] : $this->record(new TestDriveRepository(), $id);
         if (!$new) { $data['Scheduled_Date'] = date('Y-m-d\TH:i', strtotime($data['Scheduled_Date'])); }
         $customers = [];
         foreach ((new CustomerRepository())->all() as $c) { $customers[$c['Customer_ID']] = $c['First_Name'] . ' ' . $c['Last_Name'] . ' · ' . $c['Contact_Number']; }
@@ -80,7 +80,6 @@ final class RecordsController extends Controller
                 ['name' => 'Customer_ID', 'label' => 'Customer', 'type' => 'select', 'options' => $customers, 'link' => ['inquiry-new', 'Record a new customer with an inquiry']],
                 $this->vehicleField(true),
                 ['name' => 'Scheduled_Date', 'label' => 'Scheduled date and time', 'type' => 'datetime-local'],
-                ['name' => 'Duration_Minutes', 'label' => 'Duration (minutes)', 'type' => 'number', 'min' => 15, 'max' => 120, 'hint' => '15–120 minutes. Overlapping vehicle or customer bookings are blocked.'],
             ], 'returnRoute' => 'test-drives', 'success' => 'Test-drive request saved to the pending queue.',
         ], fn(array $input) => (new TestDriveService())->save($input, $id, $this->user));
     }

@@ -77,15 +77,19 @@ themeToggle?.addEventListener('click', () => {
 const brandSelect = document.querySelector('#Existing_Brand');
 const brandInput = document.querySelector('#Brand_Name');
 let newBrandDraft = brandSelect?.value ? '' : brandInput?.value || '';
-function updateBrand() {
+function updateBrand(updateOrigin = false) {
   if (!brandSelect) return;
   const existing = brandSelect.value !== '';
   document.querySelector('#new-brand-field').hidden = existing;
   brandInput.required = !existing;
   brandInput.value = existing ? brandSelect.value : newBrandDraft;
+  const originInput = document.querySelector('#Country_Of_Origin');
+  if (originInput && existing && updateOrigin) originInput.value = brandSelect.selectedOptions[0].dataset.origin || '';
+  if (originInput && !existing && updateOrigin) originInput.value = '';
+  brandSelect.dataset.wasExisting = String(existing);
 }
 brandInput?.addEventListener('input', () => { newBrandDraft = brandInput.value; });
-brandSelect?.addEventListener('change', updateBrand);
+brandSelect?.addEventListener('change', () => updateBrand(true));
 updateBrand();
 
 const customerSelect = document.querySelector('.inquiry-customer-picker #Customer_ID');
@@ -141,7 +145,7 @@ const savedPreview = preview?.innerHTML || '';
 photos?.addEventListener('change', () => {
   const files = Array.from(photos.files);
   let error = '';
-  if (files.length > 3) error = 'Select up to three vehicle photos.';
+  if (files.length > 1) error = 'Select one vehicle photo.';
   else if (files.some(file => file.size > 5 * 1024 * 1024)) error = 'Each photo must be 5 MB or smaller.';
   else if (files.some(file => !['image/jpeg', 'image/png', 'image/webp'].includes(file.type))) error = 'Use JPG, PNG, or WebP images.';
   photos.setCustomValidity(error);
@@ -150,12 +154,12 @@ photos?.addEventListener('change', () => {
   preview.innerHTML = savedPreview;
   if (error || !files.length) return;
   preview.replaceChildren();
-  files.forEach((file, index) => {
+  files.forEach((file) => {
     const figure = document.createElement('figure');
     const img = document.createElement('img');
     const caption = document.createElement('figcaption');
-    img.alt = 'Selected vehicle photo ' + (index + 1);
-    caption.textContent = index === 0 ? 'Cover photo' : 'Photo ' + (index + 1);
+    img.alt = 'Selected vehicle photo';
+    caption.textContent = 'Vehicle photo';
     figure.append(img, caption);
     preview.append(figure);
     const reader = new FileReader();

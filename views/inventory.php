@@ -6,10 +6,9 @@
     <a class="vehicle-cover" href="<?= e(url('vehicle', ['id' => $v['Vehicle_ID']])) ?>" aria-label="View <?= e($v['Brand_Name'] . ' ' . $v['Model']) ?>">
         <?php if ($photos): ?><img src="<?= e($photos[0]) ?>" alt="<?= e($v['Brand_Name'] . ' ' . $v['Model']) ?>" loading="lazy"><?php else: ?><span class="photo-placeholder"><svg viewBox="0 0 48 36" aria-hidden="true"><rect x="3" y="3" width="42" height="30" rx="4"/><circle cx="15" cy="13" r="3"/><path d="m5 29 12-10 8 6 8-12 10 16"/></svg>No photo yet</span><?php endif; ?>
         <?= badge($v['Availability_Status']) ?>
-        <?php if (count($photos) > 1): ?><span class="photo-count"><?= count($photos) ?> photos</span><?php endif; ?>
     </a>
     <div class="vehicle-card-body"><small class="muted">#<?= e($v['Vehicle_ID']) ?> · <?= e($v['Year']) ?></small><h2><a class="vehicle-name" href="<?= e(url('vehicle', ['id' => $v['Vehicle_ID']])) ?>"><?= e($v['Brand_Name'] . ' ' . $v['Model']) ?></a></h2><p class="vehicle-card-specs"><?= e($v['Color'] . ' · ' . $v['Transmission'] . ' · ' . $v['Fuel_Type']) ?></p><p class="vehicle-card-price"><?= money($v['Price']) ?></p><div class="vehicle-card-actions"><a class="text-link" href="<?= e(url('vehicle', ['id' => $v['Vehicle_ID']])) ?>">View details →</a><a class="button secondary small" href="<?= e(url('vehicle-edit', ['id' => $v['Vehicle_ID']])) ?>">Edit</a></div></div>
-<?php if ($v['Availability_Status'] !== 'Sold'): ?><form class="card-sale-action" method="post" action="<?= e(url('vehicle-sold', ['id' => $v['Vehicle_ID']])) ?>" data-confirm="Mark this vehicle as sold?"><?= csrf() ?><button class="button sold-button small" type="submit">Mark as sold</button></form><?php endif; ?>
+<div class="card-sale-action"><?php if (empty($v['Sold_Vehicle_ID'])): ?><a class="button sold-button small" href="<?= e(url('vehicle-sold', ['id' => $v['Vehicle_ID']])) ?>">Record sale</a><?php else: ?><p class="vehicle-sale-summary">Sold <?= e(date('M j, Y', strtotime($v['Sale_Date']))) ?> to <?= e($v['Customer_Name']) ?><br><strong><?= money($v['Selling_Price']) ?></strong></p><?php endif; ?></div>
 </article>
 <?php endforeach; ?>
 </div>

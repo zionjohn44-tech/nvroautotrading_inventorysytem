@@ -51,7 +51,7 @@ try {
         'vehicle' => ['GET', fn() => $inventory->show()],
         'vehicle-new' => ['GET,POST', fn() => $inventory->edit(true)],
         'vehicle-edit' => ['GET,POST', fn() => $inventory->edit()],
-        'vehicle-sold' => ['POST', fn() => $inventory->markSold()],
+        'vehicle-sold' => ['GET,POST', fn() => $inventory->markSold()],
         'vehicle-delete' => ['POST', fn() => $inventory->remove()],
         'inquiries' => ['GET', fn() => $records->inquiries()],
         'inquiry-new' => ['GET,POST', fn() => $records->inquiryEdit(true)],

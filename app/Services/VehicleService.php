@@ -17,7 +17,8 @@ final class VehicleService
 {
     public function listing(array $filters): array
     {
-        $vehicles = (new VehicleRepository())->all();
+        $repository = new VehicleRepository();
+        $vehicles = ($filters['status'] ?? '') === 'Sold' ? $repository->sold() : $repository->all();
         $term = is_string($filters['q'] ?? null) ? trim($filters['q']) : '';
         if (($filters['search_mode'] ?? '') === 'id') {
             $match = ctype_digit($term) ? (new VehicleTree($vehicles))->find((int) $term) : null;
@@ -53,6 +54,7 @@ final class VehicleService
         }
         $v = new Validator($input);
         $brandName = $v->text('Brand_Name', 'Brand', 50);
+        $brandCountry = $v->text('Country_Of_Origin', 'Country of origin', 50);
         $model = $v->text('Model', 'Model', 50);
         $year = $v->integer('Year', 'Year', 1901, min(2155, (int) date('Y') + 1));
         $color = $v->text('Color', 'Color', 30);
@@ -64,7 +66,7 @@ final class VehicleService
         $photos = (new VehiclePhotos())->upload($files);
         $oldPhotos = [];
         try {
-            $result = Database::transaction(function (PDO $db) use ($brandName, $model, $year, $color, $transmission, $fuel, $price, $status, $id, $photos, &$oldPhotos): int {
+            $result = Database::transaction(function (PDO $db) use ($brandName, $brandCountry, $model, $year, $color, $transmission, $fuel, $price, $status, $id, $photos, &$oldPhotos): int {
                 if ($id !== null) {
                     $current = $this->lockVehicle($db, $id);
                     if ($photos) { $oldPhotos = VehiclePhotos::paths($current); }
@@ -72,8 +74,11 @@ final class VehicleService
                     $query = $db->prepare('SELECT COUNT(*) FROM sold_vehicle WHERE Vehicle_ID=?');
                     $query->execute([$id]);
                     if ($query->fetchColumn() && $status !== 'Sold') { throw new ValidationException(['Availability_Status' => 'This vehicle has a recorded sale and must remain Sold.']); }
+                    if ($current['Availability_Status'] !== 'Sold' && $status === 'Sold') { throw new ValidationException(['Availability_Status' => 'Use the Mark as sold action to record the customer and sale details.']); }
+                } elseif ($status === 'Sold') {
+                    throw new ValidationException(['Availability_Status' => 'Use the Mark as sold action to record the customer and sale details.']);
                 }
-                $db->prepare("INSERT INTO brand (Brand_Name, Country_Of_Origin) VALUES (?, '') ON DUPLICATE KEY UPDATE Brand_ID=LAST_INSERT_ID(Brand_ID)")->execute([$brandName]);
+                $db->prepare('INSERT INTO brand (Brand_Name, Country_Of_Origin) VALUES (?, ?) ON DUPLICATE KEY UPDATE Country_Of_Origin=VALUES(Country_Of_Origin), Brand_ID=LAST_INSERT_ID(Brand_ID)')->execute([$brandName, $brandCountry]);
                 $brand = (int) $db->lastInsertId();
                 $values = [$brand, $model, $year, $color, $transmission, $fuel, $price, $status];
                 if ($id === null) {
@@ -84,7 +89,7 @@ final class VehicleService
                     $db->prepare('UPDATE vehicle SET Brand_ID=?, Model=?, Year=?, Color=?, Transmission=?, Fuel_Type=?, Price=?, Availability_Status=? WHERE Vehicle_ID=?')->execute($values);
                 }
                 if ($photos) {
-                    $db->prepare('UPDATE vehicle SET Image_Path=?, Image_Path_2=?, Image_Path_3=? WHERE Vehicle_ID=?')->execute([$photos[0], $photos[1] ?? null, $photos[2] ?? null, $id]);
+                    $db->prepare('UPDATE vehicle SET Image_Path=? WHERE Vehicle_ID=?')->execute([$photos[0], $id]);
                 }
                 return $id;
             });
@@ -112,11 +117,26 @@ final class VehicleService
         VehiclePhotos::remove($photos);
     }
 
-    public function markSold(int $id): void
+    public function markSold(int $id, array $input, ?int $employeeId): void
     {
-        Database::transaction(function (PDO $db) use ($id): void {
-            $this->lockVehicle($db, $id);
+        $v = new Validator($input);
+        $customerId = $v->integer('Customer_ID', 'Customer');
+        $saleDate = $v->text('Sale_Date', 'Sale date', 10);
+        $sellingPrice = $v->price('Selling_Price', 'Selling price');
+        if (!$employeeId) { $v->error('Employee_ID', 'The signed-in account must be linked to an employee record to record a sale.'); }
+        $date = \DateTimeImmutable::createFromFormat('!Y-m-d', $saleDate);
+        if (!$date || $date->format('Y-m-d') !== $saleDate) { $v->error('Sale_Date', 'Enter a valid sale date.'); }
+        $v->finish();
+        Database::transaction(function (PDO $db) use ($id, $customerId, $saleDate, $sellingPrice, $employeeId): void {
+            $vehicle = $this->lockVehicle($db, $id);
+            $existingSale = $db->prepare('SELECT Sold_Vehicle_ID FROM sold_vehicle WHERE Vehicle_ID=? FOR UPDATE');
+            $existingSale->execute([$id]);
+            if ($existingSale->fetchColumn()) { throw new ValidationException(['vehicle' => 'This vehicle already has a sale record.']); }
             $this->ensureNoActiveRequests($db, $id);
+            $customer = $db->prepare('SELECT Customer_ID FROM customer WHERE Customer_ID=? FOR UPDATE');
+            $customer->execute([$customerId]);
+            if (!$customer->fetchColumn()) { throw new ValidationException(['Customer_ID' => 'Select an existing customer.']); }
+            $db->prepare('INSERT INTO sold_vehicle (Vehicle_ID, Customer_ID, Employee_ID, Sale_Date, Selling_Price) VALUES (?,?,?,?,?)')->execute([$id, $customerId, $employeeId, $saleDate, $sellingPrice]);
             $db->prepare("UPDATE vehicle SET Availability_Status='Sold' WHERE Vehicle_ID=?")->execute([$id]);
         });
     }

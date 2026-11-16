@@ -16,7 +16,7 @@
     <?php $chosenBrand = $data['Existing_Brand'] ?? (in_array($value, $field['options'], true) ? $value : ''); ?>
     <select id="Existing_Brand" name="Existing_Brand" aria-describedby="Brand_Name-hint">
         <option value="">+ Add a new brand</option>
-        <?php foreach ($field['options'] as $brand): ?><option value="<?= e($brand) ?>"<?= selected($chosenBrand, $brand) ?>><?= e($brand) ?></option><?php endforeach; ?>
+        <?php foreach ($field['options'] as $brand): ?><option value="<?= e($brand) ?>" data-origin="<?= e($field['origins'][$brand] ?? '') ?>"<?= selected($chosenBrand, $brand) ?>><?= e($brand) ?></option><?php endforeach; ?>
     </select>
     <div id="new-brand-field"><label for="Brand_Name">New brand name</label><input id="Brand_Name" name="Brand_Name" value="<?= e($value) ?>" maxlength="50" required placeholder="e.g. Toyota" aria-describedby="Brand_Name-hint" <?= isset($errors[$name]) ? 'aria-invalid="true"' : '' ?>></div>
     <?php elseif ($type === 'select'): ?>

@@ -7,7 +7,7 @@ use NVRO\Validation\ValidationException;
 
 final class VehiclePhotos
 {
-    public const COLUMNS = ['Image_Path', 'Image_Path_2', 'Image_Path_3'];
+    public const COLUMNS = ['Image_Path'];
 
     public static function paths(array $vehicle): array
     {
@@ -25,8 +25,8 @@ final class VehiclePhotos
     public function upload(array $files): array
     {
         if (!$files) { return []; }
-        if (!isset($files['error']) || !is_array($files['error']) || count($files['error']) > 3) {
-            throw new ValidationException(['Photos' => 'Select up to three vehicle photos.']);
+        if (!isset($files['error']) || !is_array($files['error']) || count($files['error']) > 1) {
+            throw new ValidationException(['Photos' => 'Select one vehicle photo.']);
         }
         $validated = [];
         $types = ['image/jpeg' => 'jpg', 'image/png' => 'png', 'image/webp' => 'webp'];
